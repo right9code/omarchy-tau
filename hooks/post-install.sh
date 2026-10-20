@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+PLUGIN_DIR="$HOME/.config/omarchy/plugins/right9code.tau"
 TAU_SRC_DIR="$HOME/Projects/tau"
 BIN_DIR="$HOME/.local/bin"
 STUB_PATH="$BIN_DIR/tau"
@@ -70,12 +71,13 @@ STUB_EOF
 chmod +x "$STUB_PATH"
 echo "[Omarchy Tau] Installed executable stub to $STUB_PATH"
 
-# 5. Create Desktop Entry for application launcher
+# 5. Create Desktop Entry with TryExec (auto-hides when plugin is deleted)
 mkdir -p "$APPS_DIR"
-cat << 'DESKTOP_EOF' > "$APPS_DIR/tau.desktop"
+cat << DESKTOP_EOF > "$APPS_DIR/tau.desktop"
 [Desktop Entry]
 Name=Tau Agent
 Comment=Custom AI coding agent
+TryExec=$PLUGIN_DIR/manifest.json
 Exec=omarchy-launch-tui --app-id=org.omarchy.agent tau
 Icon=utilities-terminal
 Terminal=false
@@ -96,14 +98,15 @@ echo "{\"theme\": \"$THEME_NAME\"}" > "$TAU_CFG/omarchy-theme.json"
 HOOK_EOF
 chmod +x "$THEME_HOOK_DIR/99-tau-theme.sh"
 
-# 7. Add Tau to Omarchy Menu
+# 7. Add Tau to Omarchy Menu with self-cleaning "when" condition
 mkdir -p "$MENU_EXT_DIR"
 cat << 'MENU_EOF' > "$MENU_EXT_DIR/omarchy-menu.jsonc"
 {
   "setup.default.agent.tau": {
     "icon": "󰚩",
     "label": "Tau",
-    "checked": "[[ \"$(omarchy-default-agent)\" == \"tau\" ]]",
+    "when": "[[ -d $HOME/.config/omarchy/plugins/right9code.tau ]]",
+    "checked": "[[ \"$(cat ~/.config/omarchy/defaults/agent 2>/dev/null)\" == \"tau\" ]]",
     "action": "mkdir -p ~/.config/omarchy/defaults && echo tau > ~/.config/omarchy/defaults/agent && omarchy menu refresh && notify-send 'Default Agent' 'Set to Tau'"
   }
 }
@@ -113,11 +116,5 @@ omarchy menu refresh 2>/dev/null || true
 # 8. Set Tau as default agent
 mkdir -p "$DEFAULTS_DIR"
 echo "tau" > "$DEFAULTS_DIR/agent"
-
-# 9. Ensure omarchy-agent has tau dispatcher
-if [ -f /usr/bin/omarchy-agent ] && ! grep -q "tau)" /usr/bin/omarchy-agent; then
-  echo "[Omarchy Tau] Patching /usr/bin/omarchy-agent..."
-  sudo sed -i '/^\*)/i \tau)\n  command=(tau)\n  [[ -n ${prompt:-} ]] && command+=("$prompt")\n  ;;\n' /usr/bin/omarchy-agent || true
-fi
 
 echo "[Omarchy Tau] Installation completed successfully!"

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "right9code.tau",
+  "name": "Tau Agent Integration",
+  "version": "1.0.0",
+  "description": "First-class integration for custom local Tau AI agent",
+  "author": "right9code",
+  "kinds": ["service"],
+  "entryPoints": {
+    "service": "hooks/post-install.sh",
+    "remove": "hooks/post-remove.sh"
+  }
+}

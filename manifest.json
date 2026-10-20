@@ -7,7 +7,6 @@
   "author": "right9code",
   "kinds": ["service"],
   "entryPoints": {
-    "service": "hooks/post-install.sh",
-    "remove": "hooks/post-remove.sh"
+    "service": "Service.qml"
   }
 }
